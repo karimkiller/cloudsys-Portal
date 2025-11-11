@@ -1,0 +1,19 @@
+import { Body, Controller, Get, Post } from '@nestjs/common'
+import { TimeEntriesService } from './time-entries.service'
+import { CreateTimeEntryDto } from './dto/create-time-entry.dto'
+
+@Controller('time-entries')
+export class TimeEntriesController {
+  constructor(private readonly svc: TimeEntriesService) {}
+
+  @Get()
+  list() {
+    return this.svc.list()
+  }
+
+  // For now, use a dummy userId; later wire to JWT auth
+  @Post()
+  create(@Body() dto: CreateTimeEntryDto) {
+    return this.svc.create('dummy-user-id', dto)
+  }
+}
