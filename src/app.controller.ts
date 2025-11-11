@@ -1,12 +1,14 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller, Get } from '@nestjs/common'
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
-
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  root() {
+    return { name: 'CloudSys API', docs: '/docs' }
+  }
+
+  @Get('health')
+  health() {
+    return { ok: true, at: new Date().toISOString() }
   }
 }
