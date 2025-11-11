@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post } from '@nestjs/common'
+import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { TimeEntriesService } from './time-entries.service'
 import { CreateTimeEntryDto } from './dto/create-time-entry.dto'
 
@@ -12,8 +13,9 @@ export class TimeEntriesController {
   }
 
   // For now, use a dummy userId; later wire to JWT auth
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() dto: CreateTimeEntryDto) {
-    return this.svc.create('dummy-user-id', dto)
+  create(@Request() req, @Body() dto: CreateTimeEntryDto) {
+    return this.svc.create(req.user.sub, dto)
   }
 }

@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post } from '@nestjs/common'
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { TicketsService } from './tickets.service'
 import { CreateTicketDto } from './dto/create-ticket.dto'
 
@@ -11,8 +12,7 @@ export class TicketsController {
     return this.svc.list()
   }
 
+ @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() dto: CreateTicketDto) {
-    return this.svc.create(dto)
-  }
+  create(@Body() dto: CreateTicketDto) { return this.svc.create(dto) }
 }

@@ -7,8 +7,9 @@ export class AppController {
     return { name: 'CloudSys API', docs: '/docs' }
   }
 
-  @Get('health')
-  health() {
-    return { ok: true, at: new Date().toISOString() }
-  }
+ @Get('health')
+health() {
+  return { status: 'ok', uptime: process.uptime() };
+}
+
 }
