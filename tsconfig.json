@@ -1,27 +1,32 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "Node16",
     "moduleResolution": "node16",
     "resolvePackageJsonExports": true,
-    "esModuleInterop": true,
-    "isolatedModules": true,
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
     "target": "ES2021",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": false,
+    "strict": true,
+    "skipLibCheck": true,
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "baseUrl": "./",
-    "incremental": true,
-    "skipLibCheck": true,
-    "strictNullChecks": true,
+    "declaration": false,
+    "removeComments": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "incremental": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "api", "src/common/app", "src/common/environments"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "api",
+    "src/common/app",
+    "src/common/environments"
+  ]
 }
