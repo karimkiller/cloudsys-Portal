@@ -1,88 +1,206 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// ---------- Prisma schema for CloudSys (NestJS + JWT) ----------
+// Order matters: generator -> datasource -> enums -> models
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-generator client { provider = "prisma-client-js" }
 
+// -------------------- Enums --------------------
 
+enum Role {
+  OWNER
+  ADMIN
+  MANAGER
+  DEVELOPER
+  CONTRACTOR
+  CLIENT
+}
+
+enum TicketType {
+  BUG
+  TASK
+  FEATURE
+  SUPPORT
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TicketStatus {
+  NEW
+  IN_PROGRESS
+  WAITING_CLIENT
+  RESOLVED
+  CLOSED
+}
+
+enum WorkType {
+  DEV
+  SUPPORT
+  MEETING
+  TRAVEL
+}
+
+enum FormStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+// -------------------- Models --------------------
+
+model User {
+  id           String   @id @default(cuid())
+  name         String?
+  email        String?  @unique
+  passwordHash String?
+  role         Role     @default(DEVELOPER)
+  image        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  timeEntries     TimeEntry[]
+  tickets         Ticket[]         @relation("TicketAssignee")
+  formSubmissions FormSubmission[]
+  auditLogs       AuditLog[]
+}
+
+model Client {
+  id          String           @id @default(cuid())
+  name        String
+  notes       String?
+  projects    Project[]
+  tickets     Ticket[]
+  forms       FormSubmission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  timeEntries TimeEntry[]
+}
+
+model Project {
+  id              String           @id @default(cuid())
+  name            String
+  status          String           @default("Active")
+  repoUrl         String?
+  clientId        String?
+  client          Client?          @relation(fields: [clientId], references: [id])
+  tickets         Ticket[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  timeEntries     TimeEntry[]
+  formSubmissions FormSubmission[]
+}
+
+model Ticket {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  type        TicketType     @default(SUPPORT)
+  priority    TicketPriority @default(MEDIUM)
+  status      TicketStatus   @default(NEW)
+
+  assigneeId String?
+  assignee   User?   @relation("TicketAssignee", fields: [assigneeId], references: [id])
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  dueAt DateTime?
+  tags  String[]
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  timeEntries TimeEntry[]
+}
 
 model TimeEntry {
-id String @id @default(cuid())
-userId String
-user User @relation(fields: [userId], references: [id])
-date DateTime
-projectId String?
-project Project? @relation(fields: [projectId], references: [id])
-clientId String?
-client Client? @relation(fields: [clientId], references: [id])
-ticketId String?
-ticket Ticket? @relation(fields: [ticketId], references: [id])
-durationMs Int
-billable Boolean @default(true)
-workType WorkType @default(DEV)
-notes String?
-approvedBy String?
-locked Boolean @default(false)
-createdAt DateTime @default(now())
-}
+  id String @id @default(cuid())
 
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  date DateTime
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  ticketId String?
+  ticket   Ticket? @relation(fields: [ticketId], references: [id])
+
+  durationMs Int
+  billable   Boolean  @default(true)
+  workType   WorkType @default(DEV)
+  notes      String?
+  approvedBy String?
+  locked     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
 
 model Template {
-id String @id @default(cuid())
-name String
-jsonSchema Json
-version Int @default(1)
-active Boolean @default(true)
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
+  id              String           @id @default(cuid())
+  name            String
+  jsonSchema      Json
+  version         Int              @default(1)
+  active          Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  formSubmissions FormSubmission[]
 }
-
 
 model FormSubmission {
-id String @id @default(cuid())
-templateId String
-template Template @relation(fields: [templateId], references: [id])
-clientId String?
-client Client? @relation(fields: [clientId], references: [id])
-projectId String?
-project Project? @relation(fields: [projectId], references: [id])
-filledById String?
-filledBy User? @relation(fields: [filledById], references: [id])
-status FormStatus @default(DRAFT)
-payload Json
-pdfUrl String?
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
-}
+  id String @id @default(cuid())
 
+  templateId String
+  template   Template @relation(fields: [templateId], references: [id])
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  filledById String?
+  filledBy   User?   @relation(fields: [filledById], references: [id])
+
+  status  FormStatus @default(DRAFT)
+  payload Json
+  pdfUrl  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
 model Announcement {
-id String @id @default(cuid())
-title String
-body String
-createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  createdAt DateTime @default(now())
 }
 
-
 model AuditLog {
-id String @id @default(cuid())
-actorId String?
-actor User? @relation(fields: [actorId], references: [id])
-action String
-entity String
-entityId String?
-newValues Json?
-oldValues Json?
-createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  newValues Json?
+  oldValues Json?
+  createdAt DateTime @default(now())
 }
